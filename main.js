@@ -66,11 +66,15 @@ function convertTopoToDot(topo) {
 			return;
 		}
 
-		match = /\-\-\>\s+(\S+)/.exec(line);
+		match = /\-\-\>\s+(.*)$/.exec(line);
 
 		if (match && entityName) {
-			var linkedName = processName(match[1]);
-			results.push(`"${entityName}" -> "${linkedName}";`);
+			var targets = match[1];
+			targets.split(',').forEach(name => {
+				var linkedName = processName(name.trim());
+
+				results.push(`"${entityName}" -> "${linkedName}";`);
+			});
 		}
 	})
 
