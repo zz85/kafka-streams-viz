@@ -37,8 +37,8 @@
 
 	<container>
 		<div>
-			<h4>Input Kafka Topology</h4>
-			<textarea id="input" onkeydown="update()" onchange="update()">
+			<h4>Input Kafka Topology <button onclick="update()">update</button></h4>
+			<textarea id="input" onkeydown="scheduleUpdate()" onpaste="scheduleUpdate()">
 Topology
 Sub-topologies:
 Sub-topology: 0

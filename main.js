@@ -220,4 +220,14 @@ function traverseSvgToRough(child) {
 	}
 }
 
+var pending;
+function scheduleUpdate() {
+	if (pending) clearTimeout(pending);
+
+	pending = setTimeout(() => {
+		pending = null;
+		update();
+	}, 200);
+}
+
 update();
