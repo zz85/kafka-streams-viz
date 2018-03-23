@@ -40,28 +40,29 @@ function convertTopoToDot(topo) {
 		if (match) {
 			entityName = processName(match[2]);
 			var type = match[3]; // source, processor or sink
-			linkedName = match[4];
+			var linkedNames = match[4];
+			linkedNames = linkedNames.replace(/\[|\]/g, '');
+			linkedNames.split(',').forEach(linkedName => {
+				linkedName = processName(linkedName.trim());
 
-			linkedName = linkedName.replace(/\[|\]/g, '').trim();
-			linkedName = processName(linkedName);
-
-			if (linkedName === '') {
-				// short circuit
-			}
-			else if (type === 'topics') {
-				// from
-				outside.push(`"${linkedName}" -> "${entityName}";`);
-				topics.add(linkedName);
-			}
-			else if (type === 'topic') {
-				// to
-				outside.push(`"${entityName}" -> "${linkedName}";`);
-				topics.add(linkedName);
-			}
-			else if (type === 'stores') {
-				outside.push(`"${entityName}" -> "${linkedName}";`);
-				stores.add(linkedName);
-			}
+				if (linkedName === '') {
+					// short circuit
+				}
+				else if (type === 'topics') {
+					// from
+					outside.push(`"${linkedName}" -> "${entityName}";`);
+					topics.add(linkedName);
+				}
+				else if (type === 'topic') {
+					// to
+					outside.push(`"${entityName}" -> "${linkedName}";`);
+					topics.add(linkedName);
+				}
+				else if (type === 'stores') {
+					outside.push(`"${entityName}" -> "${linkedName}";`);
+					stores.add(linkedName);
+				}
+			});
 
 			return;
 		}
