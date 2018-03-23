@@ -2,18 +2,22 @@
  * @author zz85 (github.com/zz85 | twitter.com/blurspline)
  */
 
+var dpr, rc, ctx;
+
 function processName(name) {
-  return name.replace(/-/g, '-\\n');
+	return name.replace(/-/g, '-\\n');
 }
 
-function convert(topo) {
+// converts kafka stream ascii topo description to DOT language
+function convertTopoToDot(topo) {
 	var lines = topo.split('\n');
 	var results = [];
 	var outside = [];
 	var stores = new Set();
 	var topics = new Set();
-	var entity;
+	var entityName;
 
+	// dirty but quick parsing
 	lines.forEach(line => {
 		var sub = /Sub-topology: (.)/;
 		var match = sub.exec(line);
@@ -26,7 +30,7 @@ function convert(topo) {
 			style=filled;
 			color=lightgrey;
 			node [style=filled,color=white];
-			`)
+			`);
 
 			return;
 		}
@@ -34,29 +38,29 @@ function convert(topo) {
 		match = /(Source\:|Processor\:|Sink:)\s+(\S+)\s+\((topics|topic|stores)\:(.*)\)/.exec(line)
 
 		if (match) {
-			entity = processName(match[2]);
-			type = match[3];
-			names = match[4];
+			entityName = processName(match[2]);
+			var type = match[3]; // source, processor or sink
+			linkedName = match[4];
 
-			names = names.replace(/\[|\]/g, '').trim();
-			names = processName(names);
+			linkedName = linkedName.replace(/\[|\]/g, '').trim();
+			linkedName = processName(linkedName);
 
-			if (names == '') {
+			if (linkedName === '') {
 				// short circuit
 			}
 			else if (type === 'topics') {
 				// from
-				outside.push(`"${names}" -> "${entity}";`);
-				topics.add(names);
+				outside.push(`"${linkedName}" -> "${entityName}";`);
+				topics.add(linkedName);
 			}
-			else if (type == 'topic') {
+			else if (type === 'topic') {
 				// to
-				outside.push(`"${entity}" -> "${names}";`);
-				topics.add(names);
+				outside.push(`"${entityName}" -> "${linkedName}";`);
+				topics.add(linkedName);
 			}
-			else if (type == 'stores') {
-				outside.push(`"${entity}" -> "${names}";`);
-				stores.add(names);
+			else if (type === 'stores') {
+				outside.push(`"${entityName}" -> "${linkedName}";`);
+				stores.add(linkedName);
 			}
 
 			return;
@@ -64,9 +68,9 @@ function convert(topo) {
 
 		match = /\-\-\>\s+(\S+)/.exec(line);
 
-		if (match && entity) {
-			name = processName(match[1])
-			results.push(`"${entity}" -> "${name}";`);
+		if (match && entityName) {
+			var linkedName = processName(match[1]);
+			results.push(`"${entityName}" -> "${linkedName}";`);
 		}
 	})
 
@@ -75,13 +79,12 @@ function convert(topo) {
 	results = results.concat(outside);
 
 	stores.forEach(node => {
-	  results.push(`"${node}" [shape=cylinder];`)
-	  // cylinder rect
-	})
+		results.push(`"${node}" [shape=cylinder];`)
+	});
 
 	topics.forEach(node => {
-	  results.push(`"${node}" [shape=rect];`)
-	})
+		results.push(`"${node}" [shape=rect];`)
+	});
 
 	return `
 	digraph G {
@@ -89,25 +92,25 @@ function convert(topo) {
 
 		${results.join('\n')}
 	}
-	`
+	`;
 }
 
 function update() {
-	change = convert(input.value)
+	var topo = input.value;
+	var dotCode = convertTopoToDot(topo);
 
-	out.value = change
+	graphviz_code.value = dotCode;
 
-	params = {
+	var params = {
 		engine: 'dot',
 		format: 'svg'
-  	}
+  	};
 
-	v = Viz(change, params);
+	var svgCode = Viz(dotCode, params);
 
-	var tmp = document.createElement('div');
-	tmp.innerHTML = v;
+	svg_container.innerHTML = svgCode;
 
-	svg = tmp.querySelector('svg')
+	var svg = svg_container.querySelector('svg')
 	dpr = window.devicePixelRatio
 	canvas.width = svg.viewBox.baseVal.width * dpr | 0;
 	canvas.height = svg.viewBox.baseVal.height * dpr | 0;
@@ -115,16 +118,18 @@ function update() {
 	rc = rough.canvas(canvas);
 	ctx = rc.ctx
 	ctx.scale(dpr, dpr);
-  
-	g = svg.querySelector('g');
-	traverse(g);
+
+	var g = svg.querySelector('g');
+	traverseSvgToRough(g);
 }
 
 function splitToArgs(array, delimiter) {
 	return array.split(delimiter || ',').map(v => +v);
 }
 
-function traverse(child) {
+// node traversal function
+function traverseSvgToRough(child) {
+
 	if (child.nodeName === 'path') {
 		var fill = child.getAttribute('fill');
 		var stroke = child.getAttribute('stroke')
@@ -174,16 +179,6 @@ function traverse(child) {
 		var fill = child.getAttribute('fill');
 		var stroke = child.getAttribute('stroke')
 
-		/*
-			pts = pts.split(' ');
-			for (var i = 0; i < pts.length - 1; i++) {
-			var a = splitToArgs(pts[i])
-			var b = splitToArgs(pts[i + 1])
-			rc.line(...a, ...b, {
-				fill, stroke
-			});
-			}
-		*/
 		rc.path(`M${pts}Z`, { fill, stroke });
 
 		return;
@@ -196,24 +191,24 @@ function traverse(child) {
 		if (transform) {
 	  		var scale = /scale\((.*)\)/.exec(transform);
 	  		if (scale) {
-				var args = scale[1].split(' ').map(parseFloat)
-				ctx.scale(...args)
+				var args = scale[1].split(' ').map(parseFloat);
+				ctx.scale(...args);
 	  		}
 
 			var rotate = /rotate\((.*)\)/.exec(transform);
 			if (rotate) {
-				var args = rotate[1].split(' ').map(parseFloat)
-				ctx.rotate(...args)
+				var args = rotate[1].split(' ').map(parseFloat);
+				ctx.rotate(...args);
 			}
-	  
+
 			var translate = /translate\((.*)\)/.exec(transform);
 			if (translate) {
-				var args = translate[1].split(' ').map(parseFloat)
-				ctx.translate(...args)
+				var args = translate[1].split(' ').map(parseFloat);
+				ctx.translate(...args);
 			}
 		}
 
-		[...child.children].forEach(traverse);
+		[...child.children].forEach(traverseSvgToRough);
 
 		ctx.restore();
 		return;

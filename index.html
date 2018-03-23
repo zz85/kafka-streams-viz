@@ -2,23 +2,43 @@
   <body>
 	<link href="https://fonts.googleapis.com/css?family=Cabin+Sketch" rel="stylesheet">
 	<style>
-	  body {
-		font-family: 'Cabin Sketch', cursive;
-	  }
+		body {
+			font-family: 'Cabin Sketch', cursive;
+		}
 
-	  textarea {
-		font-family: 'monospace';
-		width: 400px;
-		height: 400px;
-	  }
+		textarea {
+			font-family: 'monospace';
+			width: 400px;
+			height: 400px;
+	  	}
+
+		#graphviz_code, #svg_container {
+			display: none;
+		}
+
+		container {
+			display: flex;
+		}
+
+		div {
+			flex: 0 1;
+		}
+
+		a {
+			color: #999;
+		}
 	</style>
 	<script src="vendor/viz-lite.js"></script>
 	<script src="vendor/rough.min.js"></script>
 
 	<h2>Kafka Streams Topology Visualizer</h2>
 
-	<h4>Input Kafka Topology</h4>
-	<textarea id="input" onkeydown="update()">
+	Converts an ASCII Kafka Topology description into a hand drawn diagram. <a href="https://github.com/zz85/kafka-streams-viz">Github link</a>.
+
+	<container>
+		<div>
+			<h4>Input Kafka Topology</h4>
+			<textarea id="input" onkeydown="update()">
 Topology
 Sub-topologies:
 Sub-topology: 0
@@ -46,13 +66,17 @@ Sub-topology: 1
 	<-- KSTREAM-AGGREGATE-0000000003
 	Sink: KSTREAM-SINK-0000000008 (topic: streams-count-resolved)
 	<-- KTABLE-TOSTREAM-0000000007
-	</textarea>
+			</textarea>
+		</div>
 
-	<br/>
-	<h4>Output Sketch Diagram</h4>
-	<canvas id="canvas"></canvas>
+		<div>
+			<h4>Output Sketch Diagram</h4>
+			<canvas id="canvas"></canvas>
+		</div>
+	</container>>
 
-	<textarea id="out"></textarea>
+	<textarea id="graphviz_code"></textarea>
+	<div id="svg_container"></div>
 
 	<div id="results"></div>
 	<script src="main.js"></script>
