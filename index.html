@@ -1,0 +1,61 @@
+<html>
+  <body>
+	<link href="https://fonts.googleapis.com/css?family=Cabin+Sketch" rel="stylesheet">
+	<style>
+	  body {
+		font-family: 'Cabin Sketch', cursive;
+	  }
+
+	  textarea {
+		font-family: 'monospace';
+		width: 400px;
+		height: 400px;
+	  }
+	</style>
+	<script src="vendor/viz-lite.js"></script>
+	<script src="vendor/rough.min.js"></script>
+
+	<h2>Kafka Streams Topology Visualizer</h2>
+
+	<h4>Input Kafka Topology</h4>
+	<textarea id="input" onkeydown="update()">
+Topology
+Sub-topologies:
+Sub-topology: 0
+	Source:  KSTREAM-SOURCE-0000000000 (topics: [conversation-meta])
+	--> KSTREAM-TRANSFORM-0000000001
+	Processor: KSTREAM-TRANSFORM-0000000001 (stores: [conversation-meta-state])
+	--> KSTREAM-KEY-SELECT-0000000002
+	<-- KSTREAM-SOURCE-0000000000
+	Processor: KSTREAM-KEY-SELECT-0000000002 (stores: [])
+	--> KSTREAM-FILTER-0000000005
+	<-- KSTREAM-TRANSFORM-0000000001
+	Processor: KSTREAM-FILTER-0000000005 (stores: [])
+	--> KSTREAM-SINK-0000000004
+	<-- KSTREAM-KEY-SELECT-0000000002
+	Sink: KSTREAM-SINK-0000000004 (topic: count-resolved-repartition)
+	<-- KSTREAM-FILTER-0000000005
+Sub-topology: 1
+	Source: KSTREAM-SOURCE-0000000006 (topics: [count-resolved-repartition])
+	--> KSTREAM-AGGREGATE-0000000003
+	Processor: KSTREAM-AGGREGATE-0000000003 (stores: [count-resolved])
+	--> KTABLE-TOSTREAM-0000000007
+	<-- KSTREAM-SOURCE-0000000006
+	Processor: KTABLE-TOSTREAM-0000000007 (stores: [])
+	--> KSTREAM-SINK-0000000008
+	<-- KSTREAM-AGGREGATE-0000000003
+	Sink: KSTREAM-SINK-0000000008 (topic: streams-count-resolved)
+	<-- KTABLE-TOSTREAM-0000000007
+	</textarea>
+
+	<br/>
+	<h4>Output Sketch Diagram</h4>
+	<canvas id="canvas"></canvas>
+
+	<textarea id="out"></textarea>
+
+	<div id="results"></div>
+	<script src="main.js"></script>
+
+	</body>
+</html>
