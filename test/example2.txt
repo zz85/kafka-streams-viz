@@ -1,0 +1,35 @@
+Kafka Topology: Sub-topologies:
+  Sub-topology: 0
+    Source: KSTREAM-SOURCE-0000000000 (topics: [moochannel])
+      --> KSTREAM-KEY-SELECT-0000000003, KSTREAM-TRANSFORM-0000000001
+    Processor: KSTREAM-KEY-SELECT-0000000003 (stores: [])
+      --> KSTREAM-FILTER-0000000007
+      <-- KSTREAM-SOURCE-0000000000
+    Processor: KSTREAM-FILTER-0000000007 (stores: [])
+      --> KSTREAM-SINK-0000000006
+      <-- KSTREAM-KEY-SELECT-0000000003
+    Processor: KSTREAM-TRANSFORM-0000000001 (stores: [conversation-state])
+      --> KSTREAM-SINK-0000000002
+      <-- KSTREAM-SOURCE-0000000000
+    Sink: KSTREAM-SINK-0000000002 (topic: moochannel-output)
+      <-- KSTREAM-TRANSFORM-0000000001
+    Sink: KSTREAM-SINK-0000000006 (topic: KSTREAM-AGGREGATE-STATE-STORE-0000000004-repartition)
+      <-- KSTREAM-FILTER-0000000007
+  Sub-topology: 1
+    Source: KSTREAM-SOURCE-0000000008 (topics: [KSTREAM-AGGREGATE-STATE-STORE-0000000004-repartition])
+      --> KSTREAM-AGGREGATE-0000000005
+    Processor: KSTREAM-AGGREGATE-0000000005 (stores: [KSTREAM-AGGREGATE-STATE-STORE-0000000004])
+      --> KTABLE-TOSTREAM-0000000009
+      <-- KSTREAM-SOURCE-0000000008
+    Processor: KTABLE-TOSTREAM-0000000009 (stores: [])
+      --> KSTREAM-SINK-0000000010
+      <-- KSTREAM-AGGREGATE-0000000005
+    Sink: KSTREAM-SINK-0000000010 (topic: assignments)
+      <-- KTABLE-TOSTREAM-0000000009
+  Sub-topology: 2
+    Source: Source (topics: [moochannel-output])
+      --> Process
+    Processor: Process (stores: [assignment-state])
+      --> none
+      <-- Source
+      
