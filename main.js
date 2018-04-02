@@ -1,8 +1,9 @@
 /**
- * @author zz85 (github.com/zz85 | twitter.com/blurspline)
+ * @author zz85 (https://github.com/zz85 | https://twitter.com/blurspline)
  */
 
 var dpr, rc, ctx;
+const DEBUG = false;
 
 function processName(name) {
 	return name.replace(/-/g, '-\\n');
@@ -103,6 +104,8 @@ function convertTopoToDot(topo) {
 function update() {
 	var topo = input.value;
 	var dotCode = convertTopoToDot(topo);
+	if (DEBUG) console.log('dot code\n', dotCode);
+
 
 	graphviz_code.value = dotCode;
 
@@ -119,13 +122,36 @@ function update() {
 	dpr = window.devicePixelRatio
 	canvas.width = svg.viewBox.baseVal.width * dpr | 0;
 	canvas.height = svg.viewBox.baseVal.height * dpr | 0;
+	canvas.style.width = `${svg.viewBox.baseVal.width}px`;
+	canvas.style.height = `${svg.viewBox.baseVal.height}px`;
 
 	rc = rough.canvas(canvas);
 	ctx = rc.ctx
 	ctx.scale(dpr, dpr);
 
 	var g = svg.querySelector('g');
-	traverseSvgToRough(g);
+
+	try {
+		traverseSvgToRough(g);
+	}
+	catch (e) {
+		console.error('Exception generating graph', e && e.stack || e);
+		// TODO update Frontend
+	}
+}
+
+/**
+ * The following part can be removed when rough.js adds support for rendering svgs.
+ */
+
+function getFillStroke(child) {
+	var fill = child.getAttribute('fill');
+	var stroke = child.getAttribute('stroke');
+
+	return {
+		fill: fill === 'none' ? null : fill,
+		stroke: stroke === 'none' ? null : stroke
+	};
 }
 
 function splitToArgs(array, delimiter) {
@@ -136,11 +162,9 @@ function splitToArgs(array, delimiter) {
 function traverseSvgToRough(child) {
 
 	if (child.nodeName === 'path') {
-		var fill = child.getAttribute('fill');
-		var stroke = child.getAttribute('stroke')
-
 		var d = child.getAttribute('d');
-		rc.path(d, { fill, stroke });
+		var opts = getFillStroke(child);
+		rc.path(d, opts);
 		return;
 	  }
 
@@ -150,8 +174,7 @@ function traverseSvgToRough(child) {
 		var rx = +child.getAttribute('rx');
 		var ry = +child.getAttribute('ry');
 
-		var fill = child.getAttribute('fill');
-		var stroke = child.getAttribute('stroke');
+		// var opts = getFillStroke(child);
 
 		rc.ellipse(cx, cy, rx * 1.5, ry * 1.5);
 		return;
@@ -181,10 +204,8 @@ function traverseSvgToRough(child) {
 	if (child.nodeName === 'polygon') {
 		var pts = child.getAttribute('points')
 
-		var fill = child.getAttribute('fill');
-		var stroke = child.getAttribute('stroke')
-
-		rc.path(`M${pts}Z`, { fill, stroke });
+		var opts = getFillStroke(child);
+		rc.path(`M${pts}Z`, opts);
 
 		return;
 	}
