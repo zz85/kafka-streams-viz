@@ -4,6 +4,7 @@
 
 var dpr, rc, ctx;
 const DEBUG = false;
+const STORAGE_KEY = 'kafka-streams-viz';
 
 function processName(name) {
 	return name.replace(/-/g, '-\\n');
@@ -134,6 +135,8 @@ function update() {
 
 	try {
 		traverseSvgToRough(g);
+
+		sessionStorage.setItem(STORAGE_KEY, topo);
 	}
 	catch (e) {
 		console.error('Exception generating graph', e && e.stack || e);
@@ -175,7 +178,7 @@ function traverseSvgToRough(child) {
 		var rx = +child.getAttribute('rx');
 		var ry = +child.getAttribute('ry');
 
-		// var opts = getFillStroke(child);
+		var opts = getFillStroke(child);
 
 		rc.ellipse(cx, cy, rx * 1.5, ry * 1.5);
 		return;
@@ -252,4 +255,7 @@ function scheduleUpdate() {
 	}, 200);
 }
 
+// startup
+var topo = sessionStorage.getItem(STORAGE_KEY);
+if (topo) input.value = topo;
 update();
