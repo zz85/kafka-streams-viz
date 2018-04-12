@@ -74,6 +74,7 @@ function convertTopoToDot(topo) {
 			var targets = match[1];
 			targets.split(',').forEach(name => {
 				var linkedName = processName(name.trim());
+				if (linkedName === 'none') return;
 
 				results.push(`"${entityName}" -> "${linkedName}";`);
 			});
