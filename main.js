@@ -21,7 +21,7 @@ function convertTopoToDot(topo) {
 
 	// dirty but quick parsing
 	lines.forEach(line => {
-		var sub = /Sub-topology: (.)/;
+		var sub = /Sub-topology: ([0-9]*)/;
 		var match = sub.exec(line);
 
 		if (match) {
