@@ -256,6 +256,20 @@ function scheduleUpdate() {
 }
 
 // startup
-var topo = sessionStorage.getItem(STORAGE_KEY);
+var topo;
+
+if (window.location.hash.length > 1) {
+	try {
+		topo = atob(window.location.hash.substr(1));
+	} catch {
+		console.log("Can not read topo from url hash");
+		window.location.hash = "";
+	}
+}
+
+if (!topo) {
+	topo = sessionStorage.getItem(STORAGE_KEY);
+}
+
 if (topo) input.value = topo;
 update();
