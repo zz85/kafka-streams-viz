@@ -144,17 +144,23 @@ function update() {
 	}
 }
 
+function nullIfNone(attribute) {
+	return attribute === 'none' ? null : attribute;
+}
+
 /**
  * The following part can be removed when rough.js adds support for rendering svgs.
  */
 
 function getFillStroke(child) {
-	var fill = child.getAttribute('fill');
-	var stroke = child.getAttribute('stroke');
+	var fill = nullIfNone(child.getAttribute('fill'));
+	var stroke = nullIfNone(child.getAttribute('stroke'));
+	var isBaseRectangle = child.nodeName === 'polygon' && child.parentNode.id === 'graph0';
 
 	return {
-		fill: fill === 'none' ? null : fill,
-		stroke: stroke === 'none' ? null : stroke
+		fill: isBaseRectangle ? 'white' : fill,
+		fillStyle: isBaseRectangle ? 'solid' : 'hachure',
+		stroke: stroke
 	};
 }
 
