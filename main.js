@@ -21,7 +21,7 @@ function convertTopoToDot(topo) {
 
 	// dirty but quick parsing
 	lines.forEach(line => {
-		var sub = /Sub-topology: (.)/;
+		var sub = /Sub-topology: ([0-9]*)/;
 		var match = sub.exec(line);
 
 		if (match) {
@@ -61,7 +61,12 @@ function convertTopoToDot(topo) {
 					topics.add(linkedName);
 				}
 				else if (type === 'stores') {
-					outside.push(`"${entityName}" -> "${linkedName}";`);
+					if (entityName.includes("JOIN")) {
+						outside.push(`"${linkedName}" -> "${entityName}";`);
+					} else {
+						outside.push(`"${entityName}" -> "${linkedName}";`);
+					}
+
 					stores.add(linkedName);
 				}
 			});
@@ -144,17 +149,23 @@ function update() {
 	}
 }
 
+function nullIfNone(attribute) {
+	return attribute === 'none' ? null : attribute;
+}
+
 /**
  * The following part can be removed when rough.js adds support for rendering svgs.
  */
 
 function getFillStroke(child) {
-	var fill = child.getAttribute('fill');
-	var stroke = child.getAttribute('stroke');
+	var fill = nullIfNone(child.getAttribute('fill'));
+	var stroke = nullIfNone(child.getAttribute('stroke'));
+	var isBaseRectangle = child.nodeName === 'polygon' && child.parentNode.id === 'graph0';
 
 	return {
-		fill: fill === 'none' ? null : fill,
-		stroke: stroke === 'none' ? null : stroke
+		fill: isBaseRectangle ? 'white' : fill,
+		fillStyle: isBaseRectangle ? 'solid' : 'hachure',
+		stroke: stroke
 	};
 }
 
@@ -256,6 +267,20 @@ function scheduleUpdate() {
 }
 
 // startup
-var topo = sessionStorage.getItem(STORAGE_KEY);
+var topo;
+
+if (window.location.hash.length > 1) {
+	try {
+		topo = atob(window.location.hash.substr(1));
+	} catch {
+		console.log("Can not read topo from url hash");
+		window.location.hash = "";
+	}
+}
+
+if (!topo) {
+	topo = sessionStorage.getItem(STORAGE_KEY);
+}
+
 if (topo) input.value = topo;
 update();
