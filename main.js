@@ -230,19 +230,19 @@ function traverseSvgToRough(child) {
 		ctx.save();
 
 		if (transform) {
-	  		var scale = /scale\((.*)\)/.exec(transform);
+	  		var scale = /scale\(([^)]*)\)/.exec(transform);
 	  		if (scale) {
 				var args = scale[1].split(' ').map(parseFloat);
 				ctx.scale(...args);
 	  		}
 
-			var rotate = /rotate\((.*)\)/.exec(transform);
+			var rotate = /rotate\(([^)]*)\)/.exec(transform);
 			if (rotate) {
 				var args = rotate[1].split(' ').map(parseFloat);
 				ctx.rotate(...args);
 			}
 
-			var translate = /translate\((.*)\)/.exec(transform);
+			var translate = /translate\(([^)]*)\)/.exec(transform);
 			if (translate) {
 				var args = translate[1].split(' ').map(parseFloat);
 				ctx.translate(...args);
