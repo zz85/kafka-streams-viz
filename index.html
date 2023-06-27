@@ -38,6 +38,7 @@
 	<container>
 		<div>
 			<h4>Input Kafka Topology <button onclick="update()">update</button></h4>
+			<a href="#" id="downloader" onclick="download()" download="topology.png">download</a><canvas id="canvas"></canvas>
 			<textarea id="input" onkeydown="scheduleUpdate()" onpaste="scheduleUpdate()">
 Topology
 Sub-topologies:

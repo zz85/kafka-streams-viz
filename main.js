@@ -149,6 +149,11 @@ function update() {
 	}
 }
 
+function download(){
+    document.getElementById("downloader").download = "topology.png";
+    document.getElementById("downloader").href = document.getElementById("canvas").toDataURL("image/png").replace(/^data:image\/[^;]/, 'data:application/octet-stream');
+}
+
 function nullIfNone(attribute) {
 	return attribute === 'none' ? null : attribute;
 }
